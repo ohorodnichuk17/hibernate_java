@@ -25,6 +25,11 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image_id")
+    private ProductImage productImage;
+
+
     @Override
     public String toString() {
         return "Product{" +
@@ -33,6 +38,7 @@ public class Product {
                 ", description='" + description + '\'' +
                 ", price=" + price +
                 ", category=" + category.getName() +
+                ", photo=" + (productImage != null ? productImage.getImage() : "No photo") +
                 '}';
     }
 }

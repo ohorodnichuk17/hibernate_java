@@ -2,13 +2,17 @@ package org.example;
 
 import org.example.models.Category;
 import org.example.models.Product;
+import org.example.models.ProductImage;
+import org.example.utils.FileUtils;
 import org.example.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class Main {
     public static void main(String[] args) {
@@ -21,15 +25,16 @@ public class Main {
             System.out.println("3. Delete Category");
             System.out.println("4. List Categories");
             System.out.println("5. Add Product");
-            System.out.println("6. Edit Product");
-            System.out.println("7. Delete Product");
-            System.out.println("8. List Products");
+            System.out.println("6. Add Product with image");
+            System.out.println("7. Edit Product");
+            System.out.println("8. Delete Product");
+            System.out.println("9. List Products");
             System.out.println("0. Exit");
             System.out.println("==============");
             System.out.print("Enter your choice: ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); 
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -48,12 +53,15 @@ public class Main {
                     addProduct();
                     break;
                 case 6:
-                    editProduct();
+                    addProductWithImage();
                     break;
                 case 7:
-                    deleteProduct();
+                    editProduct();
                     break;
                 case 8:
+                    deleteProduct();
+                    break;
+                case 9:
                     getListProducts();
                     break;
                 case 0:
@@ -62,6 +70,52 @@ public class Main {
                 default:
                     System.out.println("Invalid choice. Please enter a valid option.");
             }
+        }
+    }
+
+    private static void addProductWithImage() {
+        Scanner scanner = new Scanner(System.in);
+        var sf = HibernateUtil.getSessionFactory();
+
+        try (Session context = sf.openSession()) {
+            context.beginTransaction();
+            Product product = new Product();
+
+            System.out.println("Enter product name: ");
+            String temp = scanner.nextLine();
+            product.setName(temp);
+
+            System.out.println("Enter description: ");
+            temp = scanner.nextLine();
+            product.setDescription(temp);
+
+            System.out.println("Enter price: ");
+            product.setPrice(scanner.nextDouble());
+
+            Category category = new Category();
+            System.out.println("Enter category id: ");
+            category.setId(scanner.nextInt());
+
+            product.setCategory(category);
+
+            System.out.println("Enter path to the image file: ");
+            String imagePath = scanner.next();
+
+
+            String uniqueFileName = UUID.randomUUID().toString() + ".jpg";
+            String destinationPath = "images/" + uniqueFileName;
+
+            FileUtils.copyFile(imagePath, destinationPath);
+
+            ProductImage productImage = new ProductImage();
+            productImage.setImage(uniqueFileName);
+            product.setProductImage(productImage);
+
+            context.save(product);
+            context.getTransaction().commit();
+            System.out.println("Product added successfully with image!");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
